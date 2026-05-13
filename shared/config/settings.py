@@ -123,6 +123,9 @@ class KafkaSettings(_Base):
     )
     enable_idempotence: bool = Field(default=True, validation_alias="KAFKA_ENABLE_IDEMPOTENCE")
     acks: Literal["0", "1", "all"] = Field(default="all", validation_alias="KAFKA_ACKS")
+    compression_type: Literal["gzip", "snappy", "lz4", "zstd"] = Field(
+        default="gzip", validation_alias="KAFKA_COMPRESSION_TYPE"
+    )
     max_poll_records: int = Field(default=20, ge=1, validation_alias="KAFKA_MAX_POLL_RECORDS")
     session_timeout_ms: int = Field(default=30_000, validation_alias="KAFKA_SESSION_TIMEOUT_MS")
     partitions_default: int = Field(default=12, ge=1, validation_alias="KAFKA_PARTITIONS_DEFAULT")

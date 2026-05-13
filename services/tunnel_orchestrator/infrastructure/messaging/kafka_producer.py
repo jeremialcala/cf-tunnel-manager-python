@@ -51,7 +51,7 @@ class KafkaProducerFactory:
             client_id=f"{cfg.client_id}-{socket.gethostname()}",
             enable_idempotence=cfg.enable_idempotence,
             acks=cfg.acks,
-            compression_type="lz4",
+            compression_type=cfg.compression_type,
             request_timeout_ms=30_000,
             linger_ms=20,
             max_request_size=2_097_152,
