@@ -114,7 +114,7 @@ flowchart LR
 | Kubernetes | **`kubernetes_asyncio`** |
 | Persistencia | **PostgreSQL 15+** + **SQLAlchemy 2.0 async** + **Alembic** |
 | Cache / Locks | **Redis 7+** (Redlock) |
-| Observabilidad | **OpenTelemetry** → **SigNoz** + Prometheus + Grafana + Loki |
+| Observabilidad | **OpenTelemetry** → **Jaeger** (local) / **SigNoz** (opt-in) + Prometheus + Grafana + Loki |
 | Despliegue | **Docker** + **Helm** + **ArgoCD** + **GitHub Actions** |
 | IaC | **Terraform** (cuentas Cloudflare, DNS zone bootstrap) |
 | Testing | **pytest-asyncio** + **testcontainers** + **Locust** |
@@ -162,7 +162,7 @@ flowchart LR
 │
 ├── .devcontainer/                 # Dev environment reproducible
 ├── .github/workflows/             # CI/CD pipelines
-├── docker-compose.yml             # Stack local (Kafka, PG, Redis, SigNoz)
+├── docker-compose.yml             # Stack local (Kafka, PG, Redis, Jaeger, Prometheus)
 ├── pyproject.toml
 ├── Makefile
 └── README.md
@@ -184,7 +184,10 @@ flowchart LR
 # Clonar e instalar dependencias
 make install
 
-# Levantar el stack de dependencias (Kafka, PostgreSQL, Redis, SigNoz)
+# Levantar el stack de dependencias
+#   default → Kafka + Schema Registry + Kafka UI + PG + Redis + Jaeger + Prometheus
+#   opt-in  → SigNoz (heavy, requires schema bootstrap):
+#             docker compose --profile signoz up -d
 make up
 
 # Crear los topics Kafka y aplicar migraciones
