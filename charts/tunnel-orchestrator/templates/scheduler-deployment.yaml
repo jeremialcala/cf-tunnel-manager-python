@@ -1,0 +1,34 @@
+{{- if .Values.scheduler.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tunnel-orchestrator.componentName" (dict "root" . "component" "scheduler") }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tunnel-orchestrator.componentLabels" (dict "root" . "component" "scheduler") | nindent 4 }}
+spec:
+  replicas: {{ .Values.scheduler.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "tunnel-orchestrator.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: scheduler
+  template:
+    metadata:
+      labels:
+        {{- include "tunnel-orchestrator.componentLabels" (dict "root" . "component" "scheduler") | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "tunnel-orchestrator.serviceAccountName" . }}
+      securityContext: {{- toYaml .Values.securityContext | nindent 8 }}
+      containers:
+        - name: scheduler
+          image: {{ include "tunnel-orchestrator.image" (list . .Values.scheduler) }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          env: {{- include "tunnel-orchestrator.commonEnv" . | nindent 12 }}
+          resources: {{- toYaml .Values.scheduler.resources | nindent 12 }}
+          volumeMounts:
+            {{- include "tunnel-orchestrator.commonVolumeMounts" . | nindent 12 }}
+      volumes:
+        {{- include "tunnel-orchestrator.commonVolumes" . | nindent 8 }}
+{{- end }}

@@ -1,0 +1,37 @@
+{
+  "type": "record",
+  "name": "EventEnvelope",
+  "namespace": "com.tunnel.platform",
+  "doc": "Generic Kafka envelope wrapping any tunnel event payload.",
+  "fields": [
+    { "name": "schema_id", "type": ["null", "int"], "default": null },
+    { "name": "event_id", "type": "string", "doc": "ULID" },
+    { "name": "event_type", "type": "string" },
+    { "name": "event_version", "type": "int", "default": 1 },
+    { "name": "occurred_at", "type": { "type": "long", "logicalType": "timestamp-micros" } },
+    { "name": "producer", "type": "string" },
+    { "name": "correlation_id", "type": "string" },
+    { "name": "causation_id", "type": ["null", "string"], "default": null },
+    { "name": "tenant_id", "type": { "type": "string", "logicalType": "uuid" } },
+    { "name": "idempotency_key", "type": ["null", "string"], "default": null },
+    { "name": "trace_context", "type": [
+        "null",
+        {
+          "type": "record",
+          "name": "TraceContext",
+          "fields": [
+            { "name": "traceparent", "type": ["null", "string"], "default": null },
+            { "name": "tracestate",  "type": ["null", "string"], "default": null },
+            { "name": "baggage",     "type": ["null", "string"], "default": null }
+          ]
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "payload_json",
+      "type": "string",
+      "doc": "UTF-8 JSON-encoded business payload. Allows envelope evolution to remain decoupled from per-event payload evolution."
+    }
+  ]
+}

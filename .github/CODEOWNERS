@@ -1,0 +1,22 @@
+# CODEOWNERS - Higuerotech
+
+# Global owners
+*                                                               @higuerotech/platform-engineering jeremi@higerotech.com
+
+# Tunnel Orchestrator - Domain & Application logic
+/services/tunnel_orchestrator/domain/                          @higuerotech/platform-engineering jeremi@higerotech.com
+/services/tunnel_orchestrator/application/                     @higuerotech/platform-engineering
+
+# Infrastructure & Cloud Operations
+/services/tunnel_orchestrator/infrastructure/cloudflare/        @higuerotech/platform-engineering
+/services/tunnel_orchestrator/infrastructure/kubernetes/        @higuerotech/platform-engineering jeremi@higerotech.com
+
+# Kubernetes Charts & Deployment Orchestration
+/charts/                                                       @higuerotech/platform-engineering jeremi@higerotech.com
+/deployments/                                                  @higuerotech/platform-engineering
+
+# CI/CD Workflows & DevOps Tools
+/.github/workflows/                                            @higuerotech/platform-engineering jeremi@higerotech.com
+
+# Documentation & SRE Operations
+/docs/operations/                                              @higuerotech/platform-engineering

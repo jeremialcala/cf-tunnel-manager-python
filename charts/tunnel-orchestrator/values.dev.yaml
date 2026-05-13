@@ -1,0 +1,49 @@
+global:
+  image:
+    registry: ghcr.io/your-org
+    pullPolicy: Always
+  env: dev
+
+api:
+  replicaCount: 1
+  autoscaling: { enabled: false }
+  podDisruptionBudget: { enabled: false }
+  ingress:
+    enabled: false
+  resources:
+    requests: { cpu: 100m, memory: 128Mi }
+    limits:   { cpu: 500m, memory: 256Mi }
+
+worker:
+  replicaCount: 1
+  autoscaling: { enabled: false }
+  podDisruptionBudget: { enabled: false }
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits:   { cpu: 1, memory: 512Mi }
+
+scheduler:
+  replicaCount: 1
+
+dlqProcessor:
+  replicaCount: 1
+
+config:
+  appEnv: dev
+  logLevel: DEBUG
+  api:
+    docsEnabled: true
+  kafka:
+    replicationFactor: 1
+    workerConcurrency: 4
+  observability:
+    tracesSamplerArg: 1.0
+
+migrations:
+  enabled: true
+
+networkPolicy:
+  enabled: false
+
+serviceMonitor:
+  enabled: false

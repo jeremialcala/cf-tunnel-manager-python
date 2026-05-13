@@ -1,0 +1,32 @@
+{
+  "type": "record",
+  "name": "TunnelCreateRequest",
+  "namespace": "com.tunnel.events.v1",
+  "fields": [
+    { "name": "tenant_id", "type": { "type": "string", "logicalType": "uuid" } },
+    { "name": "hostname",  "type": "string" },
+    { "name": "cf_zone_id", "type": "string" },
+    { "name": "cluster",   "type": "string", "default": "default" },
+    {
+      "name": "ingress",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "IngressRule",
+          "fields": [
+            { "name": "service",   "type": "string" },
+            { "name": "hostname",  "type": ["null", "string"], "default": null },
+            { "name": "path",      "type": ["null", "string"], "default": null },
+            {
+              "name": "origin_request",
+              "type": ["null", { "type": "map", "values": "string" }],
+              "default": null
+            }
+          ]
+        }
+      }
+    },
+    { "name": "requested_by", "type": ["null", "string"], "default": null }
+  ]
+}

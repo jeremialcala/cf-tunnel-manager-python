@@ -1,0 +1,10 @@
+{
+  "type": "record",
+  "name": "TunnelDeleteRequest",
+  "namespace": "com.tunnel.events.v1",
+  "fields": [
+    { "name": "tenant_id",   "type": { "type": "string", "logicalType": "uuid" } },
+    { "name": "tunnel_id",   "type": { "type": "string", "logicalType": "uuid" } },
+    { "name": "requested_by","type": ["null", "string"], "default": null }
+  ]
+}

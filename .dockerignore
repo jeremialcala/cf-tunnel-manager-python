@@ -1,0 +1,46 @@
+.git
+.github
+.gitignore
+.editorconfig
+.python-version
+.pre-commit-config.yaml
+.devcontainer
+.vscode
+.idea
+
+# Local envs / virtualenvs
+.venv
+venv
+env
+.env
+.env.*
+!.env.example
+
+# Caches
+__pycache__
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.coverage
+coverage.xml
+htmlcov
+
+# Tests / docs / non-runtime
+tests
+docs
+charts
+deployments/argocd
+deployments/terraform
+scripts/smoke_test.py
+
+# Build artefacts
+build
+dist
+*.egg-info
+
+# Misc
+README.md
+*.md
+!docs/api/openapi.yaml
+LICENSE
+node_modules

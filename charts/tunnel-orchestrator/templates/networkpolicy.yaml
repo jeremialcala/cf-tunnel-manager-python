@@ -1,0 +1,69 @@
+{{- if .Values.networkPolicy.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "tunnel-orchestrator.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tunnel-orchestrator.commonLabels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "tunnel-orchestrator.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: ingress-nginx }
+      ports:
+        - { protocol: TCP, port: 8000 }
+    - from:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: monitoring }
+      ports:
+        - { protocol: TCP, port: {{ .Values.config.observability.metricsPort }} }
+  egress:
+    # DNS
+    - to: [{ namespaceSelector: {} }]
+      ports:
+        - { protocol: UDP, port: 53 }
+        - { protocol: TCP, port: 53 }
+    {{- if .Values.networkPolicy.egress.kafka.ports }}
+    - to: [{ namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kafka } } }]
+      ports: {{- range .Values.networkPolicy.egress.kafka.ports }}
+        - { protocol: TCP, port: {{ . }} }
+      {{- end }}
+    {{- end }}
+    {{- if .Values.networkPolicy.egress.postgres.ports }}
+    - to: [{ namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: postgres } } }]
+      ports: {{- range .Values.networkPolicy.egress.postgres.ports }}
+        - { protocol: TCP, port: {{ . }} }
+      {{- end }}
+    {{- end }}
+    {{- if .Values.networkPolicy.egress.redis.ports }}
+    - to: [{ namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: redis } } }]
+      ports: {{- range .Values.networkPolicy.egress.redis.ports }}
+        - { protocol: TCP, port: {{ . }} }
+      {{- end }}
+    {{- end }}
+    {{- if .Values.networkPolicy.egress.cloudflareApi.enabled }}
+    - to:
+        {{- range .Values.networkPolicy.egress.cloudflareApi.cidrs }}
+        - ipBlock: { cidr: {{ . | quote }} }
+        {{- end }}
+      ports: {{- range .Values.networkPolicy.egress.cloudflareApi.ports }}
+        - { protocol: TCP, port: {{ . }} }
+      {{- end }}
+    {{- end }}
+    # OTLP
+    - to: [{ namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: observability } } }]
+      ports:
+        - { protocol: TCP, port: 4317 }
+        - { protocol: TCP, port: 4318 }
+    # Kubernetes API
+    - to: [{ namespaceSelector: {} }]
+      ports:
+        - { protocol: TCP, port: 443 }
+        - { protocol: TCP, port: 6443 }
+{{- end }}

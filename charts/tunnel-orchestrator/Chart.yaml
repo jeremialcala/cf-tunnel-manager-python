@@ -1,0 +1,22 @@
+apiVersion: v2
+name: tunnel-orchestrator
+description: Distributed, event-driven Cloudflare Tunnel orchestration platform
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+kubeVersion: ">=1.27.0-0"
+home: https://github.com/your-org/tunnel-orchestrator
+sources:
+  - https://github.com/your-org/tunnel-orchestrator
+maintainers:
+  - name: Platform Engineering
+keywords:
+  - cloudflare
+  - cloudflared
+  - tunnel
+  - kafka
+  - saga
+  - zero-trust
+annotations:
+  artifacthub.io/changes: |
+    - Initial release.

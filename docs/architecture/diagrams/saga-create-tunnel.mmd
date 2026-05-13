@@ -1,0 +1,45 @@
+sequenceDiagram
+    autonumber
+    participant K as Kafka<br/>tunnel.create.request
+    participant W as Worker
+    participant Idem as Idempotency
+    participant Lock as Redlock
+    participant CF as Cloudflare API
+    participant K8S as Kubernetes API
+    participant DNS as DNS Resolver
+    participant HTTP as HTTP Prober
+    participant Out as Kafka<br/>tunnel.create.success / failure
+    participant DB as PostgreSQL
+
+    K->>W: poll(records, EOS)
+    W->>Idem: check(idempotency_key)
+    alt duplicate
+        Idem-->>W: cached_response
+        W->>Out: emit cached event
+    else new
+        W->>Lock: acquire(tenant:hostname)
+        W->>CF: create_tunnel(config_src=cloudflare)
+        CF-->>W: tunnel_id
+        W->>CF: get_tunnel_token(tunnel_id)
+        CF-->>W: remote_token
+        W->>CF: put_ingress_config(tunnel_id, rules)
+        W->>CF: create_dns_cname(zone, hostname, target=cfd_tunnel)
+        W->>K8S: create_secret(namespace, tunnel-token-X, value=remote_token)
+        W->>K8S: create_deployment(namespace, cloudflared-tunnel-X, --token-from-secret)
+        W->>K8S: wait_deployment_ready(timeout=120s)
+        W->>DNS: resolve(hostname, [1.1.1.1, 8.8.8.8], retry)
+        W->>HTTP: GET https://hostname (retry, expect 2xx/3xx)
+        W->>DB: BEGIN TX
+        W->>DB: insert outbox(tunnel.create.success, payload)
+        W->>DB: update tunnel set status='READY'
+        W->>DB: COMMIT TX
+        W->>Out: outbox-relay → publish(success)
+        W->>Lock: release
+    end
+
+    Note over W: On any failure
+    W->>W: run compensations in reverse
+    W->>K8S: delete deployment + secret
+    W->>CF: delete dns + reset ingress + delete tunnel
+    W->>DB: insert outbox(tunnel.create.failure, error)
+    W->>Out: publish(failure)

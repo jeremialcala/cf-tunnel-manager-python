@@ -1,0 +1,55 @@
+flowchart TB
+    subgraph clients [Producers]
+        UI[Self-service Portal]
+        SVC[Other Microservices]
+    end
+
+    subgraph platform [Tunnel Orchestrator Platform]
+        API[apps/api<br/>FastAPI Gateway<br/>JWT + RBAC + OpenAPI]
+        WORKER[apps/worker<br/>Kafka Consumers + Saga Orchestrator]
+        SCHED[apps/scheduler<br/>Reconciliation jobs<br/>leader-elected]
+        DLQ[apps/dlq_processor<br/>poison message handler]
+    end
+
+    subgraph data [Data Plane]
+        PG[(PostgreSQL<br/>tunnels, sagas, outbox, idempotency)]
+        REDIS[(Redis<br/>distributed locks, cache)]
+        KAFKA[(Apache Kafka<br/>EOS + Schema Registry)]
+        DLQT[(tunnel.dlq)]
+    end
+
+    subgraph external [External Control Planes]
+        CF[(Cloudflare Zero Trust API<br/>Tunnels + DNS)]
+        K8S[(Kubernetes API<br/>multi-cluster)]
+    end
+
+    subgraph obs [Observability]
+        OTEL[(OTLP Collector<br/>SigNoz / Tempo / Loki)]
+        PROM[(Prometheus)]
+    end
+
+    UI -->|HTTPS+JWT| API
+    SVC -->|publish events| KAFKA
+    API -->|publish + transactional outbox| KAFKA
+    API --> PG
+    API --> REDIS
+
+    KAFKA --> WORKER
+    WORKER --> PG
+    WORKER --> REDIS
+    WORKER --> CF
+    WORKER --> K8S
+    WORKER -->|outbox relay| KAFKA
+    WORKER -->|poison| DLQT
+
+    SCHED --> KAFKA
+    SCHED --> CF
+    SCHED --> K8S
+
+    DLQT --> DLQ
+    DLQ --> KAFKA
+
+    API -. metrics + traces .-> OTEL
+    WORKER -. metrics + traces .-> OTEL
+    SCHED -. metrics + traces .-> OTEL
+    OTEL --> PROM

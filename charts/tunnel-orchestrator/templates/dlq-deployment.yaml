@@ -1,0 +1,37 @@
+{{- if .Values.dlqProcessor.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tunnel-orchestrator.componentName" (dict "root" . "component" "dlq") }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tunnel-orchestrator.componentLabels" (dict "root" . "component" "dlq") | nindent 4 }}
+spec:
+  replicas: {{ .Values.dlqProcessor.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "tunnel-orchestrator.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: dlq
+  template:
+    metadata:
+      labels:
+        {{- include "tunnel-orchestrator.componentLabels" (dict "root" . "component" "dlq") | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "tunnel-orchestrator.serviceAccountName" . }}
+      securityContext: {{- toYaml .Values.securityContext | nindent 8 }}
+      containers:
+        - name: dlq
+          image: {{ include "tunnel-orchestrator.image" (list . .Values.dlqProcessor) }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          env:
+            {{- include "tunnel-orchestrator.commonEnv" . | nindent 12 }}
+            - name: DLQ_AUTO_REPLAY
+              value: {{ .Values.dlqProcessor.autoReplay | quote }}
+          resources: {{- toYaml .Values.dlqProcessor.resources | nindent 12 }}
+          volumeMounts:
+            {{- include "tunnel-orchestrator.commonVolumeMounts" . | nindent 12 }}
+      volumes:
+        {{- include "tunnel-orchestrator.commonVolumes" . | nindent 8 }}
+{{- end }}

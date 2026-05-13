@@ -1,0 +1,45 @@
+# syntax=docker/dockerfile:1.9
+# =====================================================================
+# tunnel-orchestrator-api  (FastAPI gateway)
+# =====================================================================
+
+ARG BASE_IMAGE=tunnel-orchestrator-base:latest
+
+# Inline base for single-Dockerfile builds (CI uses multi-stage cache).
+FROM python:3.12-slim-bookworm AS builder
+ENV UV_LINK_MODE=copy UV_PROJECT_ENVIRONMENT=/opt/venv \
+    PIP_NO_CACHE_DIR=1 PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential curl \
+    && rm -rf /var/lib/apt/lists/*
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && mv /root/.local/bin/uv /usr/local/bin/uv
+WORKDIR /app
+COPY pyproject.toml uv.lock* ./
+RUN uv venv /opt/venv && uv sync --no-dev --frozen 2>/dev/null || uv sync --no-dev
+COPY apps ./apps
+COPY services ./services
+COPY shared ./shared
+COPY platform ./platform
+RUN /opt/venv/bin/python -m compileall -q apps services shared platform
+
+FROM python:3.12-slim-bookworm AS runtime
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app PATH=/opt/venv/bin:$PATH
+RUN apt-get update && apt-get install -y --no-install-recommends curl tini ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system --gid 10001 app \
+    && useradd  --system --uid 10001 --gid app --home-dir /app --shell /usr/sbin/nologin app
+WORKDIR /app
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /app /app
+COPY migrations ./migrations
+USER app
+EXPOSE 8000 9100
+HEALTHCHECK --interval=15s --timeout=3s --retries=5 --start-period=20s \
+    CMD curl -fsS http://127.0.0.1:8000/health/live || exit 1
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["uvicorn", "apps.api.main:app", \
+     "--host", "0.0.0.0", "--port", "8000", \
+     "--workers", "1", "--loop", "uvloop", "--http", "httptools", \
+     "--access-log", "--no-server-header"]
+
+LABEL org.opencontainers.image.title="tunnel-orchestrator-api"

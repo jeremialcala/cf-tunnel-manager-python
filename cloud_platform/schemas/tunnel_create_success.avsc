@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "name": "TunnelCreateSuccess",
+  "namespace": "com.tunnel.events.v1",
+  "fields": [
+    { "name": "tenant_id",       "type": { "type": "string", "logicalType": "uuid" } },
+    { "name": "tunnel_id",       "type": { "type": "string", "logicalType": "uuid" } },
+    { "name": "cf_tunnel_id",    "type": "string" },
+    { "name": "hostname",        "type": "string" },
+    { "name": "cluster",         "type": "string" },
+    { "name": "namespace",       "type": "string" },
+    { "name": "deployment_name", "type": "string" },
+    { "name": "ready_at",        "type": { "type": "long", "logicalType": "timestamp-micros" } }
+  ]
+}

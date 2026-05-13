@@ -1,0 +1,49 @@
+name: release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version
+        id: ver
+        run: echo "tag=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build & push images
+        run: |
+          for img in api worker scheduler dlq_processor; do
+            docker buildx build \
+              --file deployments/docker/Dockerfile.$img \
+              --platform linux/amd64,linux/arm64 \
+              --tag ghcr.io/${{ github.repository }}-$img:${{ steps.ver.outputs.tag }} \
+              --tag ghcr.io/${{ github.repository }}-$img:latest \
+              --push .
+          done
+
+      - name: Package Helm chart
+        run: |
+          mkdir -p dist
+          helm package charts/tunnel-orchestrator -d dist
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.tgz
+          generate_release_notes: true

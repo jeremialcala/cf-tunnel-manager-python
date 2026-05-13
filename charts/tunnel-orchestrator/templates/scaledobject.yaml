@@ -1,0 +1,24 @@
+{{- if and .Values.worker.enabled .Values.worker.autoscaling.keda.enabled -}}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "tunnel-orchestrator.componentName" (dict "root" . "component" "worker") }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tunnel-orchestrator.componentLabels" (dict "root" . "component" "worker") | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: {{ include "tunnel-orchestrator.componentName" (dict "root" . "component" "worker") }}
+  minReplicaCount: {{ .Values.worker.autoscaling.minReplicas }}
+  maxReplicaCount: {{ .Values.worker.autoscaling.maxReplicas }}
+  pollingInterval: 15
+  cooldownPeriod: 120
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: {{ .Values.worker.autoscaling.keda.kafka.bootstrap | quote }}
+        consumerGroup: {{ .Values.worker.autoscaling.keda.kafka.consumerGroup | quote }}
+        topic: tunnel.create.request
+        lagThreshold: {{ .Values.worker.autoscaling.keda.kafka.lagThreshold | quote }}
+        offsetResetPolicy: earliest
+{{- end }}

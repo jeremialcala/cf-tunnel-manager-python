@@ -1,0 +1,21 @@
+{{ include "tunnel-orchestrator.fullname" . }} (chart {{ .Chart.Version }}, app {{ .Chart.AppVersion }}) deployed.
+
+Components installed:
+{{- if .Values.api.enabled }}
+  - api          x{{ .Values.api.replicaCount }}
+{{- end }}
+{{- if .Values.worker.enabled }}
+  - worker       x{{ .Values.worker.replicaCount }}
+{{- end }}
+{{- if .Values.scheduler.enabled }}
+  - scheduler    x{{ .Values.scheduler.replicaCount }}
+{{- end }}
+{{- if .Values.dlqProcessor.enabled }}
+  - dlq          x{{ .Values.dlqProcessor.replicaCount }}
+{{- end }}
+
+Next steps:
+  1. Verify probes:    kubectl -n {{ .Release.Namespace }} get pods
+  2. Tail API logs:    kubectl -n {{ .Release.Namespace }} logs deploy/{{ include "tunnel-orchestrator.componentName" (dict "root" . "component" "api") }} -f
+  3. Onboard a tenant: POST /v1/admin/tenants  (requires tenant:admin permission)
+  4. Open Swagger:     {{- if .Values.api.ingress.enabled }} https://{{ (index .Values.api.ingress.hosts 0).host }}/docs {{- else }} kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "tunnel-orchestrator.componentName" (dict "root" . "component" "api") }} 8000:{{ .Values.api.service.port }} {{- end }}

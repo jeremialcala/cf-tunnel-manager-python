@@ -1,0 +1,19 @@
+{
+  "type": "record",
+  "name": "TunnelCreateFailure",
+  "namespace": "com.tunnel.events.v1",
+  "fields": [
+    { "name": "tenant_id",     "type": { "type": "string", "logicalType": "uuid" } },
+    { "name": "tunnel_id",     "type": ["null", { "type": "string", "logicalType": "uuid" }], "default": null },
+    { "name": "hostname",      "type": "string" },
+    { "name": "failed_step",   "type": "string" },
+    { "name": "error_code",    "type": "string" },
+    { "name": "error_message", "type": "string" },
+    {
+      "name": "compensations_run",
+      "type": { "type": "array", "items": "string" },
+      "default": []
+    },
+    { "name": "failed_at",     "type": { "type": "long", "logicalType": "timestamp-micros" } }
+  ]
+}

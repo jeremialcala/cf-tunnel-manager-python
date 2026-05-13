@@ -1,0 +1,228 @@
+# =====================================================================
+# tunnel-orchestrator — default values (production-leaning)
+# =====================================================================
+
+global:
+  image:
+    registry: ghcr.io/your-org
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+  env: prod
+
+# ---------- API ----------
+api:
+  enabled: true
+  image:
+    repository: tunnel-orchestrator-api
+    tag: ""             # defaults to .Chart.AppVersion
+  replicaCount: 3
+  resources:
+    requests: { cpu: 200m, memory: 256Mi }
+    limits:   { cpu: 1,    memory: 512Mi }
+  service:
+    type: ClusterIP
+    port: 8000
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-body-size: 1m
+    hosts:
+      - host: tunnels.example.com
+        paths: [{ path: /, pathType: Prefix }]
+    tls:
+      - secretName: tunnel-orchestrator-tls
+        hosts: [tunnels.example.com]
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 12
+    targetCPUUtilizationPercentage: 65
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+  podAnnotations: {}
+  podLabels: {}
+
+# ---------- Worker ----------
+worker:
+  enabled: true
+  image:
+    repository: tunnel-orchestrator-worker
+    tag: ""
+  replicaCount: 4
+  resources:
+    requests: { cpu: 300m, memory: 512Mi }
+    limits:   { cpu: 2,    memory: 1Gi }
+  autoscaling:
+    enabled: true
+    minReplicas: 4
+    maxReplicas: 32
+    targetCPUUtilizationPercentage: 70
+    # Optional KEDA scaler config (see scaledobject.yaml). Lag-based.
+    keda:
+      enabled: false
+      kafka:
+        bootstrap: kafka.kafka.svc.cluster.local:9092
+        consumerGroup: tunnel-orchestrator-workers
+        lagThreshold: "100"
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+
+# ---------- Scheduler (singleton, leader-elected via Redis) ----------
+scheduler:
+  enabled: true
+  image:
+    repository: tunnel-orchestrator-scheduler
+    tag: ""
+  replicaCount: 2          # leader + standby
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits:   { cpu: 200m, memory: 256Mi }
+
+# ---------- DLQ processor ----------
+dlqProcessor:
+  enabled: true
+  image:
+    repository: tunnel-orchestrator-dlq_processor
+    tag: ""
+  replicaCount: 1
+  autoReplay: false        # set DLQ_AUTO_REPLAY env
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits:   { cpu: 200m, memory: 256Mi }
+
+# ---------- Common pod settings ----------
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile: { type: RuntimeDefault }
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities: { drop: [ALL] }
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: tunnel-orchestrator
+
+# ---------- App config (env vars) ----------
+config:
+  appEnv: prod
+  logLevel: INFO
+  logFormat: json
+
+  api:
+    docsEnabled: false
+
+  database:
+    # Use a Secret reference; chart wires DATABASE_URL from it.
+    existingSecret: tunnel-orchestrator-db
+    existingSecretKey: dsn
+    poolSize: 20
+    maxOverflow: 30
+
+  redis:
+    existingSecret: tunnel-orchestrator-redis
+    existingSecretKey: url
+    lockTtlSeconds: 120
+
+  kafka:
+    bootstrapServers: kafka.kafka.svc.cluster.local:9092
+    securityProtocol: PLAINTEXT
+    schemaRegistryUrl: http://schema-registry.kafka.svc.cluster.local:8081
+    workerConcurrency: 20
+    partitionsDefault: 12
+    replicationFactor: 3
+    consumerGroup: tunnel-orchestrator-workers
+
+  cloudflare:
+    rateLimitPer5min: 1200
+    requestTimeoutSeconds: 30
+    tunnelConfigSrc: cloudflare        # NEVER change
+
+  kubernetes:
+    mode: incluster
+    defaultNamespace: tunnels
+    cloudflaredImage: cloudflare/cloudflared:2024.10.0
+    cloudflaredReplicas: 2
+
+  verification:
+    dnsTimeoutSeconds: 180
+    dnsNameservers: "1.1.1.1,8.8.8.8"
+    httpTimeoutSeconds: 120
+
+  observability:
+    otlpEndpoint: http://otel-collector.observability.svc.cluster.local:4317
+    metricsPort: 9100
+    tracesSamplerArg: 0.2
+
+  resilience:
+    sagaStepTimeoutSeconds: 120
+    sagaGlobalTimeoutSeconds: 600
+    retryMaxAttempts: 5
+    circuitBreakerThreshold: 5
+    circuitBreakerResetSeconds: 60
+
+# ---------- JWT ----------
+jwt:
+  algorithm: RS256
+  issuer: https://auth.example.com
+  audience: tunnel-orchestrator
+  publicKey:
+    existingSecret: tunnel-orchestrator-jwt
+    existingSecretKey: public.pem
+
+# ---------- RBAC for cloudflared deployments ----------
+rbac:
+  create: true
+  # Namespaces the orchestrator may program
+  managedNamespaces:
+    - tunnels
+
+# ---------- Network policy ----------
+networkPolicy:
+  enabled: true
+  egress:
+    cloudflareApi:
+      enabled: true
+      cidrs: ["0.0.0.0/0"]            # restrict in real deployments
+      ports: [443]
+    kafka:
+      ports: [9092]
+    postgres:
+      ports: [5432]
+    redis:
+      ports: [6379]
+
+# ---------- Prometheus ServiceMonitor ----------
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 10s
+  labels: {}
+
+# ---------- Migration job ----------
+migrations:
+  enabled: true
+  image:
+    repository: tunnel-orchestrator-api
+    tag: ""
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 3

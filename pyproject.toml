@@ -1,0 +1,193 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tunnel-orchestrator"
+version = "0.1.0"
+description = "Distributed, event-driven Cloudflare Tunnel orchestration platform"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.12"
+authors = [{ name = "Tunnel Orchestrator Team" }]
+keywords = ["cloudflare", "tunnel", "kafka", "kubernetes", "saga", "event-driven"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI",
+    "Topic :: System :: Networking",
+]
+
+dependencies = [
+    # Web layer
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "python-multipart>=0.0.12",
+
+    # Models / validation
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.5.0",
+
+    # Async messaging
+    "aiokafka>=0.12.0",
+    "fastavro>=1.9.0",
+    "confluent-kafka>=2.6.0",          # only for AdminClient + SchemaRegistry sync init
+
+    # Cloudflare official SDK v5 (async)
+    "cloudflare>=5.0.0",
+
+    # Kubernetes async
+    "kubernetes_asyncio>=31.1.0",
+
+    # Persistence
+    "sqlalchemy[asyncio]>=2.0.36",
+    "asyncpg>=0.30.0",
+    "alembic>=1.14.0",
+
+    # Cache + locks
+    "redis[hiredis]>=5.2.0",
+
+    # HTTP client (DNS / HTTP probes / outbound)
+    "httpx>=0.27.0",
+    "dnspython>=2.7.0",
+
+    # Resilience
+    "tenacity>=9.0.0",
+    "aiolimiter>=1.2.0",
+    "purgatory>=3.0.1",                # async circuit breaker
+
+    # Auth
+    "pyjwt[crypto]>=2.10.0",
+    "passlib[bcrypt]>=1.7.4",
+
+    # Observability
+    "opentelemetry-api>=1.28.0",
+    "opentelemetry-sdk>=1.28.0",
+    "opentelemetry-exporter-otlp>=1.28.0",
+    "opentelemetry-instrumentation-fastapi>=0.49b0",
+    "opentelemetry-instrumentation-httpx>=0.49b0",
+    "opentelemetry-instrumentation-sqlalchemy>=0.49b0",
+    "opentelemetry-instrumentation-redis>=0.49b0",
+    "opentelemetry-instrumentation-aiokafka>=0.49b0",
+    "structlog>=24.4.0",
+    "prometheus-client>=0.21.0",
+
+    # Utilities
+    "orjson>=3.10.10",
+    "python-ulid>=3.0.0",
+    "click>=8.1.7",
+    "anyio>=4.6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.7.0",
+    "mypy>=1.13.0",
+    "types-redis",
+    "types-pyjwt",
+    "pre-commit>=4.0.0",
+    "ipython>=8.29.0",
+]
+test = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "pytest-mock>=3.14.0",
+    "pytest-randomly>=3.16.0",
+    "testcontainers[kafka,postgresql,redis]>=4.8.0",
+    "respx>=0.21.1",
+    "freezegun>=1.5.1",
+    "polyfactory>=2.18.0",
+    "hypothesis>=6.115.0",
+]
+load = [
+    "locust>=2.32.0",
+]
+
+[project.scripts]
+tunnel-api = "apps.api.main:main"
+tunnel-worker = "apps.worker.main:main"
+tunnel-scheduler = "apps.scheduler.main:main"
+tunnel-dlq = "apps.dlq_processor.main:main"
+tunnel-admin = "scripts.admin_cli:cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["apps", "services", "shared", "platform"]
+
+# ----------------------------- Tooling -----------------------------
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["apps", "services", "shared", "platform", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W",      # pycodestyle / pyflakes
+    "I",                # isort
+    "B",                # bugbear
+    "UP",               # pyupgrade
+    "SIM",              # simplify
+    "ASYNC",            # async-correctness
+    "RUF",
+    "S",                # bandit subset
+    "C4",               # comprehensions
+    "PIE",
+    "PT",               # pytest style
+    "TID",              # tidy imports
+]
+ignore = ["S101", "B008", "S104"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S", "ASYNC"]
+"migrations/**/*.py" = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+exclude = ["migrations/", "tests/load/"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+
+[[tool.mypy.overrides]]
+module = ["kubernetes_asyncio.*", "aiokafka.*", "purgatory.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-ra",
+    "--cov=services",
+    "--cov=apps",
+    "--cov=shared",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=xml",
+]
+markers = [
+    "unit: fast isolated unit tests",
+    "integration: requires testcontainers (Kafka/PG/Redis)",
+    "contract: Avro / event contract tests",
+    "e2e: end-to-end against real Cloudflare account (manual)",
+    "slow: > 5s",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["services", "apps", "shared", "platform"]
+omit = ["*/migrations/*", "*/tests/*"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = true
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "@overload",
+]

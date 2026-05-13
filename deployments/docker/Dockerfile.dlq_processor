@@ -1,0 +1,27 @@
+# syntax=docker/dockerfile:1.9
+# tunnel-orchestrator-dlq-processor
+FROM python:3.12-slim-bookworm AS builder
+ENV UV_LINK_MODE=copy UV_PROJECT_ENVIRONMENT=/opt/venv
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential curl \
+    && rm -rf /var/lib/apt/lists/*
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && mv /root/.local/bin/uv /usr/local/bin/uv
+WORKDIR /app
+COPY pyproject.toml uv.lock* ./
+RUN uv venv /opt/venv && uv sync --no-dev --frozen 2>/dev/null || uv sync --no-dev
+COPY apps ./apps
+COPY services ./services
+COPY shared ./shared
+COPY platform ./platform
+
+FROM python:3.12-slim-bookworm AS runtime
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PYTHONPATH=/app PATH=/opt/venv/bin:$PATH
+RUN apt-get update && apt-get install -y --no-install-recommends tini ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system --gid 10001 app \
+    && useradd  --system --uid 10001 --gid app --home-dir /app --shell /usr/sbin/nologin app
+WORKDIR /app
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /app /app
+USER app
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["python", "-m", "apps.dlq_processor.main"]
