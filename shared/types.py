@@ -55,5 +55,6 @@ HostnameStr = Annotated[
         min_length=3,
         max_length=253,
         pattern=r"^(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$",
+        
     ),
 ]
