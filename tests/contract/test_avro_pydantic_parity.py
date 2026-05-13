@@ -54,7 +54,7 @@ def test_avro_field_names_intersect_pydantic(model, filename):
 
 def test_envelope_avro_loads():
     parsed = fastavro.parse_schema(json.loads((SCHEMAS_DIR / "envelope.avsc").read_text()))
-    assert parsed["name"] == "EventEnvelope"
+    assert parsed["name"] == "com.tunnel.platform.EventEnvelope"
 
 
 def test_orjson_roundtrips_a_request_payload():
