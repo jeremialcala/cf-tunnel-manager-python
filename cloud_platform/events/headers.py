@@ -14,7 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Iterable, Sequence
 
-from platform.events.envelope import EventEnvelope
+from cloud_platform.events.envelope import EventEnvelope
 
 
 HeaderTuple = tuple[str, bytes]

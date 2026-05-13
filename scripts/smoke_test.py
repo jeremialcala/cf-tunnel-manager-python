@@ -21,9 +21,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from sqlalchemy import select
 
-from platform.events.envelope import build_envelope
-from platform.events.payloads import TunnelCreateRequestPayload
-from platform.events.topics import Topic
+from cloud_platform.events.envelope import build_envelope
+from cloud_platform.events.payloads import TunnelCreateRequestPayload
+from cloud_platform.events.topics import Topic
 from services.tunnel_orchestrator.infrastructure.messaging import KafkaProducerFactory
 from services.tunnel_orchestrator.infrastructure.messaging.kafka_producer import (
     DirectKafkaSender,

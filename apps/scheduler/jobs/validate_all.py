@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from apps.composition import Container
-from platform.events.envelope import build_envelope
-from platform.events.payloads import TunnelValidationRequestPayload
-from platform.events.topics import Topic
+from cloud_platform.events.envelope import build_envelope
+from cloud_platform.events.payloads import TunnelValidationRequestPayload
+from cloud_platform.events.topics import Topic
 from shared.logging import get_logger
 from services.tunnel_orchestrator.domain.aggregates import TunnelStatus
 from services.tunnel_orchestrator.domain.repositories import TunnelRepository

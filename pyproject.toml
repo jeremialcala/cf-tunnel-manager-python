@@ -112,14 +112,14 @@ tunnel-dlq = "apps.dlq_processor.main:main"
 tunnel-admin = "scripts.admin_cli:cli"
 
 [tool.hatch.build.targets.wheel]
-packages = ["apps", "services", "shared", "platform"]
+packages = ["apps", "services", "shared", "cloud_platform"]
 
 # ----------------------------- Tooling -----------------------------
 
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-src = ["apps", "services", "shared", "platform", "tests"]
+src = ["apps", "services", "shared", "cloud_platform", "tests"]
 
 [tool.ruff.lint]
 select = [
@@ -178,7 +178,7 @@ markers = [
 
 [tool.coverage.run]
 branch = true
-source = ["services", "apps", "shared", "platform"]
+source = ["services", "apps", "shared", "cloud_platform"]
 omit = ["*/migrations/*", "*/tests/*"]
 
 [tool.coverage.report]

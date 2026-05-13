@@ -3,8 +3,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any
 
-from platform.events.envelope import EventEnvelope
-from platform.events.topics import Topic
+from cloud_platform.events.envelope import EventEnvelope
+from cloud_platform.events.topics import Topic
 
 
 class EventPublisher(ABC):

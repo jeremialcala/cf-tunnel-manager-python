@@ -22,12 +22,12 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from platform.events.envelope import build_envelope
-from platform.events.payloads import (
+from cloud_platform.events.envelope import build_envelope
+from cloud_platform.events.payloads import (
     TunnelCreateFailurePayload,
     TunnelCreateSuccessPayload,
 )
-from platform.events.topics import Topic
+from cloud_platform.events.topics import Topic
 from shared.config import get_settings
 from shared.errors import (
     Conflict,

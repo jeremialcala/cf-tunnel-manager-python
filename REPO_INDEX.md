@@ -159,10 +159,10 @@ shared/
     └── metrics.py                      # Prometheus registry (saga / CF / K8s / Kafka / verify)
 ```
 
-## `platform/` — Event contracts
+## `cloud_platform/` — Event contracts
 
 ```
-platform/
+cloud_platform/
 ├── events/
 │   ├── envelope.py                     # Generic EventEnvelope + build_envelope helper
 │   ├── headers.py                      # EventHeaders <-> Kafka header tuples

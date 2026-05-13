@@ -9,7 +9,7 @@ import fastavro
 import orjson
 import pytest
 
-from platform.events.payloads import (
+from cloud_platform.events.payloads import (
     TunnelCreateFailurePayload,
     TunnelCreateRequestPayload,
     TunnelCreateSuccessPayload,
@@ -19,7 +19,7 @@ from platform.events.payloads import (
 
 pytestmark = pytest.mark.contract
 
-SCHEMAS_DIR = Path(__file__).resolve().parents[2] / "platform" / "schemas"
+SCHEMAS_DIR = Path(__file__).resolve().parents[2] / "cloud_platform" / "schemas"
 
 # Pydantic model ↔ Avro file mapping
 _PAIRS = [

@@ -138,7 +138,7 @@ flowchart LR
 │       └── infrastructure/        # Adapters (Cloudflare, K8s, Kafka, PG, Redis)
 │
 ├── shared/                        # Shared kernel (logging, OTel, errores, config)
-├── platform/                      # Event envelopes, Avro schemas, versioning
+├── cloud_platform/                      # Event envelopes, Avro schemas, versioning
 │
 ├── deployments/
 │   ├── docker/                    # Dockerfiles multi-stage por proceso
@@ -271,7 +271,7 @@ Detalle de cada step en [`docs/architecture/03-saga-orchestration.md`](docs/arch
 | `tunnel.validation.failure` | `saga` | alerting | `tunnel_id` | 30d |
 | `tunnel.dlq` | `worker` (on poison) | `dlq_processor` | `tenant_id` | 90d |
 
-Contratos de eventos versionados en [`docs/kafka-contracts/`](docs/kafka-contracts/) y schemas Avro en [`platform/schemas/`](platform/schemas/).
+Contratos de eventos versionados en [`docs/kafka-contracts/`](docs/kafka-contracts/) y schemas Avro en [`cloud_platform/schemas/`](cloud_platform/schemas/).
 
 ---
 

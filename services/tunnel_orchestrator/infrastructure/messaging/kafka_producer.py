@@ -20,10 +20,10 @@ from typing import Any
 import orjson
 from aiokafka import AIOKafkaProducer
 
-from platform.events.envelope import EventEnvelope
-from platform.events.headers import headers_from_envelope
-from platform.events.payloads import TunnelDlqPayload
-from platform.events.topics import Topic
+from cloud_platform.events.envelope import EventEnvelope
+from cloud_platform.events.headers import headers_from_envelope
+from cloud_platform.events.payloads import TunnelDlqPayload
+from cloud_platform.events.topics import Topic
 from shared.config import get_settings
 from shared.errors import MessagingError
 from shared.logging import get_logger
@@ -118,7 +118,7 @@ class AioKafkaPublisher(EventPublisher):
         stack: str | None = None,
         attempts: int = 1,
     ) -> None:
-        from platform.events.envelope import build_envelope
+        from cloud_platform.events.envelope import build_envelope
         from uuid import UUID
 
         tenant_str = original_headers.get("tenant_id")

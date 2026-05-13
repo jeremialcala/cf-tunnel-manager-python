@@ -1,6 +1,6 @@
-from platform.events.envelope import EventEnvelope, build_envelope
-from platform.events.headers import EventHeaders, headers_from_envelope, headers_to_dict
-from platform.events.payloads import (
+from cloud_platform.events.envelope import EventEnvelope, build_envelope
+from cloud_platform.events.headers import EventHeaders, headers_from_envelope, headers_to_dict
+from cloud_platform.events.payloads import (
     TunnelCreateFailurePayload,
     TunnelCreateRequestPayload,
     TunnelCreateSuccessPayload,
@@ -12,7 +12,7 @@ from platform.events.payloads import (
     TunnelValidationRequestPayload,
     TunnelValidationSuccessPayload,
 )
-from platform.events.versioning import EVENT_TYPE_TO_PAYLOAD, parse_event
+from cloud_platform.events.versioning import EVENT_TYPE_TO_PAYLOAD, parse_event
 
 __all__ = [
     "EVENT_TYPE_TO_PAYLOAD",

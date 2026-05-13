@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Any
 
 from apps.composition import Container
-from platform.events.envelope import EventEnvelope
-from platform.events.payloads import TunnelDeleteRequestPayload
+from cloud_platform.events.envelope import EventEnvelope
+from cloud_platform.events.payloads import TunnelDeleteRequestPayload
 from services.tunnel_orchestrator.application.commands import DeleteTunnelCommand
 from shared.errors import ValidationError
 from shared.logging import get_logger

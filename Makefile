@@ -120,7 +120,7 @@ fmt: ## Format with ruff
 	$(UV) run ruff check --fix .
 
 typecheck: ## Run mypy
-	$(UV) run mypy services apps shared platform
+	$(UV) run mypy services apps shared cloud_platform
 
 check: lint typecheck ## Lint + typecheck
 

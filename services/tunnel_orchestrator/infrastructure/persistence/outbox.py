@@ -10,9 +10,9 @@ import orjson
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from platform.events.envelope import EventEnvelope, build_envelope
-from platform.events.headers import headers_from_envelope
-from platform.events.topics import Topic
+from cloud_platform.events.envelope import EventEnvelope, build_envelope
+from cloud_platform.events.headers import headers_from_envelope
+from cloud_platform.events.topics import Topic
 from shared.logging import get_logger
 from services.tunnel_orchestrator.domain.events.base import DomainEvent
 from services.tunnel_orchestrator.infrastructure.persistence.database import Database

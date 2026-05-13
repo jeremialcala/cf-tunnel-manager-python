@@ -1,4 +1,4 @@
-"""Register all Avro schemas in platform/schemas/ to the Schema Registry."""
+"""Register all Avro schemas in cloud_platform/schemas/ to the Schema Registry."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from services.tunnel_orchestrator.infrastructure.messaging import SchemaRegistry
 
 
 async def _main() -> None:
-    schemas_dir = Path(__file__).resolve().parent.parent / "platform" / "schemas"
+    schemas_dir = Path(__file__).resolve().parent.parent / "cloud_platform" / "schemas"
     client = SchemaRegistryClient()
     result = await client.register_directory(schemas_dir)
     for subject, sid in result.items():

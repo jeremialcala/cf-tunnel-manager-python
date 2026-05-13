@@ -5,8 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from apps.composition import Container
-from platform.events.envelope import EventEnvelope
-from platform.events.payloads import TunnelCreateRequestPayload
+from cloud_platform.events.envelope import EventEnvelope
+from cloud_platform.events.payloads import TunnelCreateRequestPayload
 from services.tunnel_orchestrator.application.commands import (
     CreateTunnelCommand,
 )

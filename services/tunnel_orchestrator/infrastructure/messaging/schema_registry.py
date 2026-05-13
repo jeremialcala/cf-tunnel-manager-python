@@ -1,7 +1,7 @@
 """Tiny Confluent Schema Registry HTTP client.
 
 Used at startup to register/lookup Avro schemas listed in
-``platform/schemas/``. Avoids a hard runtime dependency on the official
+``cloud_platform/schemas/``. Avoids a hard runtime dependency on the official
 client to keep the runtime image small.
 """
 

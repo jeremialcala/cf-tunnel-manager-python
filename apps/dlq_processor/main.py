@@ -19,9 +19,9 @@ from contextlib import suppress
 from typing import Any
 
 from apps.composition import Container, build_container, shutdown_container
-from platform.events.envelope import EventEnvelope
-from platform.events.payloads import TunnelDlqPayload
-from platform.events.topics import Topic
+from cloud_platform.events.envelope import EventEnvelope
+from cloud_platform.events.payloads import TunnelDlqPayload
+from cloud_platform.events.topics import Topic
 from shared.errors import ValidationError
 from shared.logging import get_logger
 from shared.observability import metrics

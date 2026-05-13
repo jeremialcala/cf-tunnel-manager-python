@@ -33,7 +33,7 @@ from apps.worker.consumers import (
     reconcile_consumer,
     validation_consumer,
 )
-from platform.events.topics import Topic
+from cloud_platform.events.topics import Topic
 from shared.config import get_settings
 from shared.logging import get_logger
 from shared.observability import metrics

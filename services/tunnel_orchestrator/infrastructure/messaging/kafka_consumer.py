@@ -24,9 +24,9 @@ from aiokafka import AIOKafkaConsumer, ConsumerRecord, TopicPartition
 from opentelemetry import trace
 from opentelemetry.propagate import extract
 
-from platform.events.envelope import EventEnvelope
-from platform.events.headers import headers_to_dict
-from platform.events.versioning import parse_event
+from cloud_platform.events.envelope import EventEnvelope
+from cloud_platform.events.headers import headers_to_dict
+from cloud_platform.events.versioning import parse_event
 from shared.config import get_settings
 from shared.errors import AppError
 from shared.logging import get_logger

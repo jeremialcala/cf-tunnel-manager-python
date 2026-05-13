@@ -11,8 +11,8 @@ from typing import Any, Mapping, Type
 
 from pydantic import BaseModel
 
-from platform.events.envelope import EventEnvelope
-from platform.events.payloads import (
+from cloud_platform.events.envelope import EventEnvelope
+from cloud_platform.events.payloads import (
     TunnelCreateFailurePayload,
     TunnelCreateRequestPayload,
     TunnelCreateSuccessPayload,

@@ -30,7 +30,7 @@ repos:
           - types-redis
           - types-pyjwt
         args: [--config-file=pyproject.toml]
-        files: ^(apps|services|shared|platform)/
+        files: ^(apps|services|shared|cloud_platform)/
 
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.21.0
